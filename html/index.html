@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>레트로 프루트 & 7 슬롯머신</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0b0b0f;
+            color: #ffffff;
+        }
+        /* 네온 효과 및 슬롯 애니메이션 정의 */
+        .neon-text {
+            text-shadow: 0 0 10px rgba(236, 72, 153, 0.7), 0 0 20px rgba(236, 72, 153, 0.5);
+        }
+        .neon-border {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+        .slot-reel {
+            transition: transform 0.1s ease-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .jackpot-active {
+            animation: bounce 0.5s ease infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 md:p-8">
+
+    <main class="w-full max-w-2xl bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 neon-border my-auto">
+        
+        <header class="text-center mb-8">
+            <div class="inline-block bg-pink-500/10 text-pink-500 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-widest">
+                🎰 Highschool Lucky Machine
+            </div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 mb-2 neon-text">
+                프루트 & 7 슬롯머신
+            </h1>
+            <p class="text-gray-400 text-sm">자신의 배팅 포인트를 입력하고 대박을 노려보세요!</p>
+        </header>
