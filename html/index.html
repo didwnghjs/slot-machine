@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D 프루트 & 7 슬롯머신</title>
+    <title>럭키 프루트 & 7 슬롯머신</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -11,36 +11,18 @@
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #050508;
             color: #ffffff;
-            perspective: 1000px; /* 3D 효과를 위한 원근감 설정 */
         }
-        /* 3D 슬롯 머신 바디 네온 효과 */
-        .neon-glow {
-            box-shadow: 0 0 25px rgba(236, 72, 153, 0.3), inset 0 0 20px rgba(99, 102, 241, 0.2);
+        /* 슬롯머신의 네온 효과 및 미세한 광원 연출 */
+        .neon-container {
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.25), inset 0 0 20px rgba(99, 102, 241, 0.15);
         }
-        /* 릴의 3D 입체 회전 효과를 위한 스타일 */
-        .reel-container {
-            perspective: 600px;
-        }
-        .reel-3d {
-            transform-style: preserve-3d;
-            transition: transform 0.1s ease-out;
-        }
-        /* 잭팟 발생 시 흔들리는 애니메이션 */
-        @keyframes shake {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            20% { transform: translate(-2px, 2px) rotate(-1deg); }
-            40% { transform: translate(2px, -2px) rotate(1deg); }
-            60% { transform: translate(-2px, -2px) rotate(-1deg); }
-            80% { transform: translate(2px, 2px) rotate(1deg); }
-        }
-        .jackpot-shake {
-            animation: shake 0.4s ease infinite;
+        /* 릴 텍스트가 회전할 때 자연스러운 트랜지션 효과 제공 */
+        .reel-spin {
+            transition: transform 0.08s ease-out;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <main id="machineBody" class="w-full max-w-lg bg-gradient-to-b from-gray-900 to-gray-950 border border-gray-800 rounded-3xl p-6 md:p-8 neon-glow transition-all duration-300">
+    <main id="slotMachineContainer" class="w-full max-w-md bg-gradient-to-b from-gray-900 to-gray-950 border border-gray-800 rounded-3xl p-
         
-        <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
-            
