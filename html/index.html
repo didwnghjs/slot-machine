@@ -3,112 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>럭키 프루트 & 7 슬롯머신</title>
+    <title>3D 럭키 프루트 슬롯머신</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #050508;
+            background-color: #030305;
             color: #ffffff;
+            perspective: 1200px; /* 3D 입체 원근감 깊이 설정 */
+            overflow-x: hidden;
         }
-        /* 슬롯머신의 네온 효과 및 미세한 광원 연출 */
-        .neon-container {
-            box-shadow: 0 0 25px rgba(236, 72, 153, 0.25), inset 0 0 20px rgba(99, 102, 241, 0.15);
+        /* 슬롯 머신 네온 불빛 디자인 효과 */
+        .neon-glow-frame {
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), inset 0 0 20px rgba(236, 72, 153, 0.2);
         }
-        /* 릴 텍스트가 회전할 때 자연스러운 트랜지션 효과 제공 */
-        .reel-spin {
-            transition: transform 0.08s ease-out;
+        /* 3D 회전 릴 뷰포트 및 구조 정의 */
+        .reel-viewport {
+            perspective: 400px;
+        }
+        .reel-3d-box {
+            transform-style: preserve-3d;
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        /* 콤보 강조 번쩍임 애니메이션 */
+        @keyframes combo-pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px #f59e0b); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px #ef4444); }
+        }
+        .combo-active {
+            animation: combo-pulse 0.6s infinite;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <main id="slotMachineContainer" class="w-full max-w-md bg-gradient-to-b from-gray-900 to-gray-950 border border-gray-800 rounded-3xl p-6 md:p-8 neon-container transition-all duration-300">
+    <main class="w-full max-w-md bg-gradient-to-b from-gray-900 to-black border-2 border-gray-800 rounded-3xl p-6 neon-glow-frame">
         
-        <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
+        <header class="flex justify-between items-start mb-6 pb-4 border-b border-gray-800/80">
             <div>
-                <h1 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 tracking-tight">
-                    프루트 & 7 슬롯머신
+                <h1 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-amber-400 tracking-tight">
+                    3D PREMIUM FRUIT SLOT
                 </h1>
-                <p class="text-[11px] text-gray-500 mt-0.5">배팅 총 한도: 100 코인 고정</p>
+                <div id="comboBadge" class="hidden mt-1 bg-gradient-to-r from-amber-500 to-red-500 text-black text-[10px] font-black px-2 py-0.5 rounded shadow-sm uppercase tracking-wider font-mono">
+                    🔥 <span id="comboCount">0</span> COMBO ACTIVE
+                </div>
             </div>
-            <div class="bg-gray-950 border border-gray-850 px-4 py-2 rounded-xl text-right">
-                <span class="text-[10px] text-gray-500 block font-medium">보유 코인</span>
-                <span id="coinScore" class="text-lg font-black text-yellow-400">100</span>
+            
+            <div class="bg-gray-950/80 border border-gray-800 px-3 py-1.5 rounded-xl text-right min-w-[80px]">
+                <span class="text-[9px] text-gray-500 block font-medium tracking-tight">MY COIN</span>
+                <span id="walletDisplay" class="text-base font-black text-yellow-400 font-mono">100</span>
             </div>
         </header>
 
-        <section id="bankruptcyScreen" class="hidden text-center py-10">
-            <h2 class="text-5xl font-black text-red-600 tracking-wider mb-2 animate-pulse">파산</h2>
-            <p class="text-gray-400 text-sm mb-6">모든 코인을 전액 탕진하셨습니다.</p>
+        <section id="bankruptcyScreen" class="hidden text-center py-12">
+            <h2 class="text-5xl font-black text-red-600 tracking-widest mb-3 animate-pulse">파산</h2>
+            <p class="text-xs text-gray-400 mb-8">모든 소유 코인이 소진되었습니다.</p>
             <button 
-                onclick="restartGame()"
-                class="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-3.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-red-600/10 text-sm"
+                onclick="actionResetGame()"
+                class="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-3.5 rounded-xl transition-all active:scale-95 shadow-md shadow-red-600/10 text-sm"
             >
-                다시 시작하기 🔄
+                코인 충전 후 다시 시작하기 🔄
             </button>
         </section>
 
-        <div id="activePlayScreen" class="block space-y-6">
+        <div id="mainDashboard" class="block space-y-6">
             
             <section class="text-center">
                 <div class="flex justify-between items-center mb-2 px-1">
-                    <span class="text-[10px] font-bold text-gray-600 tracking-widest">SLOT DISPLAY</span>
-                    <span id="statusBar" class="bg-indigo-950/60 text-indigo-400 text-[11px] font-bold px-2.5 py-0.5 rounded-md border border-indigo-900/50">
-                        대기 중
+                    <span class="text-[9px] font-bold text-gray-600 tracking-widest font-mono">3D REEL ROTATION</span>
+                    <span id="statusIndicator" class="bg-purple-950/40 text-purple-400 text-[10px] font-bold px-2 py-0.5 rounded border border-purple-900/40 tracking-wide">
+                        READY
                     </span>
                 </div>
 
-                <div class="bg-gray-950 border-2 border-gray-850 rounded-2xl p-5 flex justify-center gap-4 shadow-inner">
-                    <div class="w-24 h-28 bg-gradient-to-b from-gray-900 to-black border border-gray-700 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                        <span id="slotWindow1" class="reel-spin text-4xl select-none block">🍇</span>
+                <div class="bg-gray-950 border-2 border-gray-850 rounded-2xl p-4 flex justify-center gap-3 shadow-inner">
+                    <div class="reel-viewport w-24 h-28 bg-gradient-to-b from-gray-900 to-black border border-gray-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                        <span id="wheelUnit1" class="reel-3d-box text-4xl select-none block transform">🍇</span>
                     </div>
-                    <div class="w-24 h-28 bg-gradient-to-b from-gray-900 to-black border border-gray-700 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                        <span id="slotWindow2" class="reel-spin text-4xl select-none block">🍓</span>
+                    <div class="reel-viewport w-24 h-28 bg-gradient-to-b from-gray-900 to-black border border-gray-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                        <span id="wheelUnit2" class="reel-3d-box text-4xl select-none block transform">🍎</span>
                     </div>
-                    <div class="w-24 h-28 bg-gradient-to-b from-gray-900 to-black border border-gray-700 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                        <span id="slotWindow3" class="reel-spin text-4xl select-none block">🍍</span>
+                    <div class="reel-viewport w-24 h-28 bg-gradient-to-b from-gray-900 to-black border border-gray-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                        <span id="wheelUnit3" class="reel-3d-box text-4xl select-none block transform">🍍</span>
                     </div>
                 </div>
             </section>
 
-            <section class="bg-gray-950 border border-gray-850 rounded-2xl p-4">
+            <section class="bg-gray-950/80 border border-gray-850 rounded-2xl p-4">
                 <div class="flex justify-between items-center mb-2">
-                    <label for="betValueInput" class="text-xs font-bold text-gray-400">배팅 금액 입력</label>
-                    <span class="text-[10px] text-purple-400 font-semibold">보유 한도 내 조정 가능</span>
+                    <label for="betAmountField" class="text-xs font-bold text-gray-400">배팅 코인 지정</label>
+                    <span class="text-[10px] text-purple-400 font-semibold font-mono">MAX 100</span>
                 </div>
                 
                 <div class="flex gap-2">
                     <input 
                         type="number" 
-                        id="betValueInput" 
+                        id="betAmountField" 
                         value="10"
                         min="1" 
                         max="100"
-                        class="w-24 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-center font-bold focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-all text-sm"
+                        class="w-20 bg-gray-900 border border-gray-700 rounded-xl px-2 py-2 text-white text-center font-bold focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-all text-sm font-mono"
                     >
-                    <button onclick="modifyBetValue(5)" class="flex-1 bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-bold rounded-xl text-gray-300 active:scale-95 transition-all">+5</button>
-                    <button onclick="modifyBetValue(10)" class="flex-1 bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-bold rounded-xl text-gray-300 active:scale-95 transition-all">+10</button>
-                    <button onclick="modifyBetValue('MAX')" class="flex-1 bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-800 text-xs font-black rounded-xl text-indigo-400 active:scale-95 transition-all">MAX</button>
+                    <button onclick="modifyBetWallet(5)" class="flex-1 bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-bold rounded-xl text-gray-300 active:scale-95 transition-all">+5</button>
+                    <button onclick="modifyBetWallet(10)" class="flex-1 bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-bold rounded-xl text-gray-300 active:scale-95 transition-all">+10</button>
+                    <button onclick="modifyBetWallet('MAX')" class="flex-1 bg-purple-950/40 hover:bg-purple-900/60 border border-purple-800 text-xs font-black rounded-xl text-purple-400 active:scale-95 transition-all font-mono">MAX</button>
                 </div>
                 
-                <p id="alertPrompt" class="text-red-400 text-[11px] mt-2 hidden">
-                    ⚠️ 배팅 코인이 비어있거나 올바르지 않습니다. (최대 100 코인까지 입력 가능)
+                <p id="errorPrompt" class="text-red-400 text-[10px] mt-2 hidden">
+                    ⚠️ 입력 정보가 비어있거나 소지한 코인을 초과했습니다! (최대 100코인 한도 내 지정 필수)
                 </p>
             </section>
 
             <button 
-                id="leverSpinBtn"
-                onclick="triggerSlotSpin()"
-                class="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold py-4 rounded-xl transition-all duration-200 active:scale-98 flex items-center justify-center gap-2 text-sm shadow-md"
+                id="leverActionTrigger"
+                onclick="executeSlotSpin()"
+                class="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500 hover:brightness-110 text-white font-black py-4 rounded-xl transition-all active:scale-98 text-sm tracking-wider shadow-lg"
             >
-                슬롯 핸들 당기기 🚀
+                SPIN REELS 🎰
             </button>
 
-            <section id="feedbackCard" class="hidden bg-gray-950 border border-gray-850 rounded-2xl p-4 text-center transition-all">
-                <h3 id="feedbackSummary" class="text-sm font-black text-white mb-1">결과 계산 대기</h3>
-                <p id="feedbackDetail" class="text-xs text-gray-400">포인트를 배팅하고 스핀하면 실시간으로 정산 연산 결과가 반영됩니다.</p>
+            <section id="payoutReportCard" class="hidden bg-gray-950 border border-gray-850 rounded-2xl p-4 text-center transition-all">
+                <h3 id="reportSummary" class="text-sm font-black text-white mb-1">결과 계산 대기</h3>
+                <p id="reportDetail" class="text-xs text-gray-400">정산 연산 결과가 여기에 실시간 매핑됩니다.</p>
             </section>
 
         </div>
@@ -116,189 +134,262 @@
     </main>
 
     <script>
-        // 전역 코인 제어 장치 및 심볼 인덱스 초기 설정 (10번 요구사항: 100 코인 고정)
-        let totalAssetWallet = 100;
-        const prizeSymbols = ['🍇', '🍓', '🍍', '🍎', '🍋', '7'];
+        // 요구사항 지정용 과일 데이터 배열 인덱싱 구축
+        const fruitSymbols = ['🍇', '🍎', '🍍', '🥭', '🍉', '🍓', '🍑'];
+        const fruitNames = { '🍇': '포도', '🍎': '사과', '🍍': '파인애플', '🥭': '망고', '🍉': '수박', '🍓': '딸기', '🍑': '복숭아' };
+
+        // 가변 상태 관리 레지스터 메모리 변수
+        let walletBalance = 100;
+        let consecutiveStreak = 0; // 14번 콤보 카운트 기록용 변수
 
         /**
-         * 배팅 제어 장치 오프셋 조절 및 매핑 연산 함수
+         * 수치 조절 및 한도 보정 연산기 함수
          */
-        function modifyBetValue(action) {
-            const betInput = document.getElementById('betValueInput');
-            let baseNum = parseInt(betInput.value) || 0;
+        function modifyBetWallet(action) {
+            const betInput = document.getElementById('betAmountField');
+            let currentBet = parseInt(betInput.value) || 0;
 
             if (action === 'MAX') {
-                betInput.value = Math.min(totalAssetWallet, 100);
+                betInput.value = Math.min(walletBalance, 100);
             } else {
-                let targetNum = baseNum + action;
-                if (targetNum > 100) targetNum = 100;
-                if (targetNum > totalAssetWallet) targetNum = totalAssetWallet;
-                betInput.value = targetNum;
+                let targetBet = currentBet + action;
+                if (targetBet > 100) targetBet = 100;
+                if (targetBet > walletBalance) targetBet = walletBalance;
+                betInput.value = targetBet;
             }
         }
 
         /**
-         * 주 함수: 슬롯 컴포넌트 구동 핸들러
+         * 코어 가동 함수: 3D 릴 회전 믹싱 메커니즘 엔진
          */
-        function triggerSlotSpin() {
-            const betInput = document.getElementById('betValueInput');
-            const alertPrompt = document.getElementById('alertPrompt');
-            const leverSpinBtn = document.getElementById('leverSpinBtn');
-            const statusBar = document.getElementById('statusBar');
-            const feedbackCard = document.getElementById('feedbackCard');
+        function executeSlotSpin() {
+            const betInput = document.getElementById('betAmountField');
+            const errorPrompt = document.getElementById('errorPrompt');
+            const leverActionTrigger = document.getElementById('leverActionTrigger');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const payoutReportCard = document.getElementById('payoutReportCard');
 
-            const selectedBet = parseInt(betInput.value);
+            const betValue = parseInt(betInput.value);
 
-            // 유효성 체크 조건식 예외 제어 (사용자 입력 검증 및 제한 사항 필터링)
-            if (!selectedBet || isNaN(selectedBet) || selectedBet <= 0 || selectedBet > totalAssetWallet || selectedBet > 100) {
-                alertPrompt.classList.remove('hidden');
+            // 입력값 검증 유효성 논리 조건식 (비어 있거나 유효 범위를 벗어날 시 가동 차단 규칙)
+            if (!betValue || isNaN(betValue) || betValue <= 0 || betValue > walletBalance || betValue > 100) {
+                errorPrompt.classList.remove('hidden');
                 betInput.classList.add('border-red-500');
                 return;
             }
 
-            // 예외 텍스트 숨김 처리 및 버튼 상호작용 제한 가동
-            alertPrompt.classList.add('hidden');
+            // 예외 락 클리어 및 프론트 상태 락 변환
+            errorPrompt.classList.add('hidden');
             betInput.classList.remove('border-red-500');
-            leverSpinBtn.disabled = true;
-            feedbackCard.classList.add('hidden');
+            leverActionTrigger.disabled = true;
+            payoutReportCard.classList.add('hidden');
 
-            statusBar.className = "bg-yellow-950/60 text-yellow-500 text-[11px] font-bold px-2.5 py-0.5 rounded-md border border-yellow-900/50 animate-pulse";
-            statusBar.innerText = "스핀 연산 중";
+            statusIndicator.className = "bg-amber-950/60 text-amber-500 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-900/40 animate-pulse";
+            statusIndicator.innerText = "SPINNING";
 
-            // 차감 처리 및 계량 디스플레이 동기화
-            totalAssetWallet -= selectedBet;
-            refreshWalletUI();
+            // 선제적 자산 차감 및 UI 갱신 동화
+            walletBalance -= betValue;
+            syncWalletUI();
 
-            const w1 = document.getElementById('slotWindow1');
-            const w2 = document.getElementById('slotWindow2');
-            const w3 = document.getElementById('slotWindow3');
+            const w1 = document.getElementById('wheelUnit1');
+            const w2 = document.getElementById('wheelUnit2');
+            const w3 = document.getElementById('wheelUnit3');
 
-            let rotationTicks = 0;
-            // 타이머 스케줄링을 통한 난수 대입 애니메이션 구동 효과 구현
-            const spinTimer = setInterval(() => {
-                rotationTicks++;
+            let rotationSteps = 0;
+            // 15번 3D 매트릭스 변환 및 난수 주입을 응용한 입체 릴 회전 효과 연출
+            const spinAnimation = setInterval(() => {
+                rotationSteps++;
                 
-                w1.innerText = prizeSymbols[Math.floor(Math.random() * prizeSymbols.length)];
-                w2.innerText = prizeSymbols[Math.floor(Math.random() * prizeSymbols.length)];
-                w3.innerText = prizeSymbols[Math.floor(Math.random() * prizeSymbols.length)];
+                w1.innerText = fruitSymbols[Math.floor(Math.random() * fruitSymbols.length)];
+                w1.style.transform = `rotateX(${rotationSteps * 40}deg) translateZ(8px)`;
+                
+                w2.innerText = fruitSymbols[Math.floor(Math.random() * fruitSymbols.length)];
+                w2.style.transform = `rotateX(${rotationSteps * -40}deg) translateZ(8px)`;
+                
+                w3.innerText = fruitSymbols[Math.floor(Math.random() * fruitSymbols.length)];
+                w3.style.transform = `rotateX(${rotationSteps * 50}deg) translateZ(8px)`;
 
-                // 소정의 시간 후 정지 및 당첨 조건 판단 핸들러 연계
-                if (rotationTicks > 10) {
-                    clearInterval(spinTimer);
-                    evaluateSpinOutcome(selectedBet);
+                if (rotationSteps > 12) {
+                    clearInterval(spinAnimation);
+                    // 3D 위상 각도 원위치 보정 정렬 및 판단 모듈 이관
+                    w1.style.transform = "rotateX(0deg) translateZ(0px)";
+                    w2.style.transform = "rotateX(0deg) translateZ(0px)";
+                    w3.style.transform = "rotateX(0deg) translateZ(0px)";
+                    verifyMatchOutcome(betValue);
                 }
-            }, 80);
+            }, 65);
         }
 
         /**
-         * 당첨 배율 알고리즘 분석 및 피드백 시각화 처리 함수
+         * 매칭 당첨 확률 검증 및 보상 알고리즘 정산 장치 함수
          */
-        function evaluateSpinOutcome(stakedAmount) {
-            const w1 = document.getElementById('slotWindow1').innerText;
-            const w2 = document.getElementById('slotWindow2').innerText;
-            const w3 = document.getElementById('slotWindow3').innerText;
+        function verifyMatchOutcome(betValue) {
+            const w1 = document.getElementById('wheelUnit1').innerText;
+            const w2 = document.getElementById('wheelUnit2').innerText;
+            const w3 = document.getElementById('wheelUnit3').innerText;
 
-            const leverSpinBtn = document.getElementById('leverSpinBtn');
-            const statusBar = document.getElementById('statusBar');
-            const feedbackCard = document.getElementById('feedbackCard');
-            const feedbackSummary = document.getElementById('feedbackSummary');
-            const feedbackDetail = document.getElementById('feedbackDetail');
+            const leverActionTrigger = document.getElementById('leverActionTrigger');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const payoutReportCard = document.getElementById('payoutReportCard');
+            const reportSummary = document.getElementById('reportSummary');
+            const reportDetail = document.getElementById('reportDetail');
 
-            let revenueMultiplier = 0;
-            let displayTitle = "";
+            let multiplier = 0;
+            let summaryHeadline = "";
+            let triggerWinEffect = false;
 
-            // 조건 연산 장치 판정문 분기 처리
+            // 과일 기기 매칭 판단 분기문 설계 규칙
             if (w1 === w2 && w2 === w3) {
-                if (w1 === '7') {
-                    revenueMultiplier = stakedAmount * 10; // 7 잭팟 최대 가중치
-                    displayTitle = "🔥 트리플 잭팟 7 발생!! 🔥";
-                } else {
-                    revenueMultiplier = stakedAmount * 4;
-                    displayTitle = "🎉 트리플 과일 일치 성공! 🎉";
-                }
+                // 3열 완벽 합치
+                triggerWinEffect = true;
+                multiplier = 8;
+                summaryHeadline = `🎉 트리플 [${fruitNames[w1]}] 대박 당첨! 🎉`;
             } else if (w1 === w2 || w2 === w3 || w1 === w3) {
-                revenueMultiplier = Math.floor(stakedAmount * 1.5);
-                displayTitle = "✨ 더블 매칭 페어 획득 ✨";
-            } else if (w1 === '7' || w2 === '7' || w3 === '7') {
-                revenueMultiplier = Math.floor(stakedAmount * 1.0); // 7 포함 시 원금 보장형 보너스 적용
-                displayTitle = "👍 행운의 single 7 세이브 👍";
+                // 2열 부분 합치
+                triggerWinEffect = true;
+                multiplier = 2;
+                const matchIcon = (w1 === w2 || w1 === w3) ? w1 : w2;
+                summaryHeadline = `✨ 더블 [${fruitNames[matchIcon]}] 페어 달성 ✨`;
             } else {
-                revenueMultiplier = 0;
-                displayTitle = "미당첨 낙방 조합 😢";
+                // 당첨 실패 (꽝)
+                triggerWinEffect = false;
+                multiplier = 0;
+                summaryHeadline = "미당첨 조합 😢";
             }
 
-            // 실시간 자산 지표 최종 연산 누적
-            totalAssetWallet += revenueMultiplier;
-            refreshWalletUI();
-
-            // 가시적 레이아웃 보드 동적 출력 전환
-            feedbackCard.classList.remove('hidden');
-            if (revenueMultiplier > 0) {
-                feedbackCard.className = "bg-green-950/30 border border-green-500/30 rounded-2xl p-4 text-center transition-all";
-                feedbackSummary.className = "text-sm font-black text-green-400 mb-1";
-                feedbackSummary.innerText = displayTitle;
-                feedbackDetail.innerText = `즉시 보상 정산이 반영되어 [ +${revenueMultiplier} 코인 ]을 지급받았습니다.`;
+            // 14번 조건: 연속 당첨 콤보 상태 기록 기계 정산
+            if (triggerWinEffect) {
+                consecutiveStreak++;
+                // 콤보 누적 배율 가산 보상 적용 (2콤보 이상부터 10%씩 보너스 가중치 부여)
+                let comboBonus = consecutiveStreak > 1 ? Math.floor(betValue * (consecutiveStreak * 0.1)) : 0;
+                var finalPayout = (betValue * multiplier) + comboBonus;
+                walletBalance += finalPayout;
                 
-                statusBar.className = "bg-green-500/10 text-green-400 text-[11px] font-bold px-2.5 py-0.5 rounded-md border border-green-500/30";
-                statusBar.innerText = "정산 완료";
+                // 13번 조건: 불꽃 효과 캔버스 트리거 구동
+                triggerFireworkBlast();
+                if (consecutiveStreak > 1) triggerComboScreenFlash();
             } else {
-                feedbackCard.className = "bg-gray-950 border border-gray-850 rounded-2xl p-4 text-center transition-all";
-                feedbackSummary.className = "text-sm font-black text-gray-400 mb-1";
-                feedbackSummary.innerText = displayTitle;
-                feedbackDetail.innerText = `일치 조건을 충족하지 못해 [ -${stakedAmount} 코인 ]이 차감 처리되었습니다.`;
-                
-                statusBar.className = "bg-red-500/10 text-red-400 text-[11px] font-bold px-2.5 py-0.5 rounded-md border border-red-500/30";
-                statusBar.innerText = "미당첨";
+                consecutiveStreak = 0; // 낙방 시 연속 콤보 초기화
+                var finalPayout = 0;
             }
 
-            // 11번 파산 상태 검증 제어식 (자산이 0이 되면 즉시 실행 차단 및 복구 스크린 전환)
-            if (totalAssetWallet <= 0) {
+            // 배지 UI 데이터 동화 리프레시
+            syncWalletUI();
+            refreshComboBadge();
+
+            // 결과 하이라이트 영역 동적 마운트 출력
+            payoutReportCard.classList.remove('hidden');
+            if (finalPayout > 0) {
+                payoutReportCard.className = "bg-green-950/30 border border-green-500/30 rounded-2xl p-4 text-center transition-all";
+                reportSummary.className = "text-sm font-black text-green-400 mb-1";
+                reportSummary.innerText = summaryHeadline;
+                
+                let comboText = consecutiveStreak > 1 ? ` (콤보 보너스 +${Math.floor(betValue * (consecutiveStreak * 0.1))} 포함)` : "";
+                reportDetail.innerText = `축하합니다! 총 [ +${finalPayout} 코인 ]의 당첨금이 지급되었습니다.${comboText}`;
+                
+                statusIndicator.className = "bg-green-500/10 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded border border-green-500/30";
+                statusIndicator.innerText = "WIN";
+            } else {
+                payoutReportCard.className = "bg-gray-950 border border-gray-850 rounded-2xl p-4 text-center transition-all";
+                reportSummary.className = "text-sm font-black text-gray-500 mb-1";
+                reportSummary.innerText = summaryHeadline;
+                reportDetail.innerText = `일치하는 조건이 없어 배팅한 [ -${betValue} 코인 ]을 잃었습니다.`;
+                
+                statusIndicator.className = "bg-red-500/10 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500/30";
+                statusIndicator.innerText = "LOSE";
+            }
+
+            // 11번 조건: 자산 완전 탕진 파산 스위칭 조건 판정식
+            if (walletBalance <= 0) {
                 activateBankruptcyMode();
                 return;
             }
 
-            // 제어 플래그 복구
-            leverSpinBtn.disabled = false;
+            leverActionTrigger.disabled = false;
         }
 
         /**
-         * 계량 텍스트 스코어 동기화 엔진 함수
+         * 13번 요구사항: 당첨 시 축하 스파크 불꽃 폭죽 효과 엔진
          */
-        function refreshWalletUI() {
-            document.getElementById('coinScore').innerText = totalAssetWallet;
+        function triggerFireworkBlast() {
+            confetti({
+                particleCount: 80,
+                spread: 60,
+                origin: { y: 0.6 },
+                colors: ['#a855f7', '#ec4899', '#f59e0b', '#10b981']
+            });
         }
 
         /**
-         * 파산 UI 잠금 스위칭 장치 함수
+         * 14번 요구사항: 연속 당첨 콤보 연출용 화면 진동 효과 스위치
+         */
+        function triggerComboScreenFlash() {
+            // 화려한 사이드 불꽃 이펙트 추가 분사
+            let end = Date.now() + (0.3 * 1000);
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+                if (Date.now() < end) { requestAnimationFrame(frame); }
+            }());
+        }
+
+        /**
+         * 자산 디스플레이 데이터 스왑 갱신 유틸
+         */
+        function syncWalletUI() {
+            document.getElementById('walletDisplay').innerText = walletBalance;
+        }
+
+        /**
+         * 연속 당첨 콤보 배지 제어 장치 함수
+         */
+        function refreshComboBadge() {
+            const badge = document.getElementById('comboBadge');
+            const countSpan = document.getElementById('comboCount');
+            
+            if (consecutiveStreak > 1) {
+                badge.classList.remove('hidden');
+                badge.classList.add('combo-active');
+                countSpan.innerText = consecutiveStreak;
+            } else {
+                badge.classList.add('hidden');
+                badge.classList.remove('combo-active');
+            }
+        }
+
+        /**
+         * 11번 파산 잠금 레이어 스위칭 장치 함수
          */
         function activateBankruptcyMode() {
-            document.getElementById('activePlayScreen').classList.replace('block', 'hidden');
+            document.getElementById('mainDashboard').classList.replace('block', 'hidden');
             document.getElementById('bankruptcyScreen').classList.remove('hidden');
             
-            const statusBar = document.getElementById('statusBar');
-            statusBar.className = "bg-red-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-md";
-            statusBar.innerText = "파산 상태";
+            const indicator = document.getElementById('statusIndicator');
+            indicator.className = "bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded";
+            indicator.innerText = "파산";
         }
 
         /**
-         * 초기화 및 상태 머신 초기화 회귀 함수
+         * 11번 요구사항: 다시시작 초기화 시스템 장치 함수
          */
-        function restartGame() {
-            totalAssetWallet = 100;
-            refreshWalletUI();
+        function actionResetGame() {
+            walletBalance = 100;
+            consecutiveStreak = 0;
+            syncWalletUI();
+            refreshComboBadge();
             
-            // 입력 폼 초깃값 원복 및 가시 스크린 스왑 제어
-            document.getElementById('betValueInput').value = "10";
-            document.getElementById('activePlayScreen').classList.replace('hidden', 'block');
+            // 데이터 원복 처리 및 화면 컨테이너 토글 복구
+            document.getElementById('betAmountField').value = "10";
+            document.getElementById('mainDashboard').classList.replace('hidden', 'block');
             document.getElementById('bankruptcyScreen').classList.add('hidden');
-            document.getElementById('feedbackCard').classList.add('hidden');
+            document.getElementById('payoutReportCard').classList.add('hidden');
             
-            const leverSpinBtn = document.getElementById('leverSpinBtn');
-            leverSpinBtn.disabled = false;
+            const trigger = document.getElementById('leverActionTrigger');
+            trigger.disabled = false;
 
-            const statusBar = document.getElementById('statusBar');
-            statusBar.className = "bg-indigo-950/60 text-indigo-400 text-[11px] font-bold px-2.5 py-0.5 rounded-md border border-indigo-900/50";
-            statusBar.innerText = "대기 중";
+            const indicator = document.getElementById('statusIndicator');
+            indicator.className = "bg-purple-950/40 text-purple-400 text-[10px] font-bold px-2 py-0.5 rounded border border-purple-900/40";
+            indicator.innerText = "READY";
         }
     </script>
 </body>
