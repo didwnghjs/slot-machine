@@ -44,3 +44,284 @@
             </h1>
             <p class="text-gray-400 text-sm">자신의 배팅 포인트를 입력하고 대박을 노려보세요!</p>
         </header>
+
+        <section class="bg-gray-950 border border-gray-800 rounded-2xl p-4 mb-6">
+            <h2 class="text-sm font-bold text-indigo-400 mb-3 flex items-center gap-2">
+                📌 슬롯머신 핵심 규칙 3가지
+            </h2>
+            <ul class="text-xs text-gray-400 space-y-2">
+                <li class="flex items-start gap-2">
+                    <span class="text-pink-500 font-bold">1.</span> 
+                    포인트 기반 플레이: 배팅할 포인트(숫자)를 입력창에 반드시 입력해야 작동합니다.
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-pink-500 font-bold">2.</span> 
+                    심볼 6종 구성: 포도(🍇), 딸기(🍓), 파인애플(🍍), 사과(🍎), 레몬(🍋) 그리고 행운의 7(🔥)이 등장합니다.
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-pink-500 font-bold">3.</span> 
+                    당첨 기준: 3개 심볼이 모두 일치하면 대박, 2개 일치 시 보너스, 숫자 '7'은 1개만 나와도 특별 점수를 얻습니다.
+                </li>
+            </ul>
+        </section>
+
+        <section class="mb-8">
+            <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5">
+                <label for="betInput" class="block text-sm font-medium text-gray-300 mb-2">
+                    배팅할 포인트 입력 <span class="text-pink-500">*</span>
+                </label>
+                <div class="flex gap-3">
+                    <input 
+                        type="number" 
+                        id="betInput" 
+                        placeholder="예: 100 (숫자만 입력)" 
+                        class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 text-base transition-all"
+                        min="1"
+                    >
+                    <button 
+                        id="spinButton"
+                        onclick="runSlotMachine()"
+                        class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 text-base shrink-0 shadow-lg shadow-pink-500/20"
+                    >
+                        레버 당기기 🚀
+                    </button>
+                </div>
+                <p id="errorMessage" class="text-red-400 text-xs mt-2 hidden flex items-center gap-1">
+                    ⚠️ 배팅 포인트가 비어있거나 올바르지 않습니다. 숫자를 입력해 주세요!
+                </p>
+            </div>
+        </section>
+
+        <section class="mb-8 text-center">
+            <div class="flex justify-between items-center mb-3 px-1">
+                <span class="text-xs font-semibold text-gray-400">SLOT WINDOW</span>
+                <span id="statusBadge" class="bg-gray-800 text-gray-400 text-xs font-bold px-3 py-1 rounded-full border border-gray-700 tracking-wide">
+                    대기 중
+                </span>
+            </div>
+
+            <div class="bg-gradient-to-b from-gray-950 to-gray-900 border-2 border-gray-800 rounded-2xl p-6 flex justify-center gap-4 md:gap-6 shadow-inner">
+                <div class="w-20 h-24 md:w-28 md:h-32 bg-gray-900 border border-gray-700 rounded-xl flex items-center justify-center text-4xl md:text-5xl shadow-md select-none overflow-hidden">
+                    <span id="reel1" class="slot-reel">🍇</span>
+                </div>
+                <div class="w-20 h-24 md:w-28 md:h-32 bg-gray-900 border border-gray-700 rounded-xl flex items-center justify-center text-4xl md:text-5xl shadow-md select-none overflow-hidden">
+                    <span id="reel2" class="slot-reel">🍓</span>
+                </div>
+                <div class="w-20 h-24 md:w-28 md:h-32 bg-gray-900 border border-gray-700 rounded-xl flex items-center justify-center text-4xl md:text-5xl shadow-md select-none overflow-hidden">
+                    <span id="reel3" class="slot-reel">🍍</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="resultArea" class="hidden bg-indigo-950/40 border border-indigo-500/30 rounded-2xl p-5 text-center mb-8 transition-all">
+            <div class="text-xs text-indigo-400 font-bold uppercase tracking-wider mb-1">RESULT OUTCOME</div>
+            <h3 id="resultTitle" class="text-xl font-black text-white mb-2">결과 대기 중</h3>
+            <p id="resultDesc" class="text-sm text-gray-300">포인트를 입력하고 레버를 당기면 실시간 피드백이 제공됩니다.</p>
+        </section>
+
+        <section class="border-t border-gray-800 pt-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-sm font-bold text-gray-300 flex items-center gap-2">
+                    📜 내 플레이 기록 (<span id="historyCount">0</span>)
+                </h3>
+                <button onclick="clearHistory()" class="text-xs text-gray-500 hover:text-gray-400 underline transition-colors">
+                    기록 초기화
+                </button>
+            </div>
+            <div id="historyList" class="space-y-2 max-h-40 overflow-y-auto pr-1 text-xs text-gray-400">
+                <p id="emptyHistory" class="text-center text-gray-600 py-4 italic">아직 저장된 슬롯 기록이 없습니다.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="w-full text-center text-xs text-gray-600 mt-6">
+        &copy; 2026 레트로 슬롯 프로젝트. Built for Highschool PE & Sports Creative App.
+    </footer>
+
+    <script>
+        // 사용할 과일 및 7 이모지 배열 생성
+        const symbols = ['🍇', '🍓', '🍍', '🍎', '🍋', '🔥']; // 🔥 = 행운의 7 대용 이모지
+        const symbolNames = { '🍇': '포도', '🍓': '딸기', '🍍': '파인애플', '🍎': '사과', '🍋': '레몬', '🔥': '7' };
+        
+        // 기록을 담을 전역 배열
+        let gameHistory = [];
+
+        /**
+         * 핵심 함수: 슬롯머신 가동
+         */
+        function runSlotMachine() {
+            const betInput = document.getElementById('betInput');
+            const errorMessage = document.getElementById('errorMessage');
+            const spinButton = document.getElementById('spinButton');
+            const statusBadge = document.getElementById('statusBadge');
+            const resultArea = document.getElementById('resultArea');
+
+            // 1. 사용자 입력 검증 (비어 있으면 진행 불가 규칙 구현)
+            const betValue = betInput.value.trim();
+            if (!betValue || isNaN(betValue) || parseInt(betValue) <= 0) {
+                errorMessage.classList.remove('hidden');
+                betInput.classList.add('border-red-500');
+                betInput.focus();
+                return;
+            }
+
+            // 오류 상황 클리어 시 원상 복구
+            errorMessage.classList.add('hidden');
+            betInput.classList.remove('border-red-500');
+
+            // 2. 실행 중 UI 상태 변경 (상태 배지 업데이트)
+            spinButton.disabled = true;
+            spinButton.innerText = "회전 중... 🎰";
+            statusBadge.className = "bg-yellow-500/10 text-yellow-500 text-xs font-bold px-3 py-1 rounded-full border border-yellow-500/30 tracking-wide animate-pulse";
+            statusBadge.innerText = "심볼 섞는 중";
+            resultArea.classList.add('hidden');
+
+            // 슬롯 릴 요소 가져오기
+            const r1 = document.getElementById('reel1');
+            const r2 = document.getElementById('reel2');
+            const r3 = document.getElementById('reel3');
+
+            // 간이 애니메이션 효과 구현 (0.6초간 랜덤 출력 후 정지)
+            let counter = 0;
+            const interval = setInterval(() => {
+                r1.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                r2.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                r3.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                counter++;
+                if (counter > 6) {
+                    clearInterval(interval);
+                    finalizeResult(parseInt(betValue));
+                }
+            }, 100);
+        }
+
+        /**
+         * 결과 계산 및 화면 하이라이트 반영 함수
+         */
+        function finalizeResult(betPoint) {
+            const r1 = document.getElementById('reel1').innerText;
+            const r2 = document.getElementById('reel2').innerText;
+            const r3 = document.getElementById('reel3').innerText;
+
+            const spinButton = document.getElementById('spinButton');
+            const statusBadge = document.getElementById('statusBadge');
+            const resultArea = document.getElementById('resultArea');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDesc = document.getElementById('resultDesc');
+
+            let reward = 0;
+            let outcomeText = "";
+            let isJackpot = false;
+
+            // 로직 판정 규칙 계산
+            if (r1 === r2 && r2 === r3) {
+                // 3개 완전 일치
+                isJackpot = true;
+                if (r1 === '🔥') {
+                    reward = betPoint * 77;
+                    outcomeText = `🔥 트리플 블레이징 7 잭팟!! 🔥`;
+                } else {
+                    reward = betPoint * 10;
+                    outcomeText = `🎉 [${symbolNames[r1]}] 트리플 크러시 성공! 🎉`;
+                }
+            } else if (r1 === r2 || r2 === r3 || r1 === r3) {
+                // 2개 일치 (보너스)
+                reward = betPoint * 2;
+                const matchedSymbol = (r1 === r2 || r1 === r3) ? r1 : r2;
+                outcomeText = `✨ [${symbolNames[matchedSymbol]}] 더블 매치 보너스 ✨`;
+            } else if (r1 === '🔥' || r2 === '🔥' || r3 === '🔥') {
+                // 7이 최소 1개 이상 포함 시 구제 찬스
+                reward = Math.floor(betPoint * 1.2);
+                outcomeText = `👍 럭키 7 단일 콤보 달성! 👍`;
+            } else {
+                // 꽝
+                reward = 0;
+                outcomeText = "아쉬운 낙방 😢";
+            }
+
+            // 3. 결과 화면 즉시 반영 및 하이라이트 디자인 업데이트
+            resultArea.classList.remove('hidden');
+            if (reward > 0) {
+                resultArea.className = "bg-green-950/40 border border-green-500/40 rounded-2xl p-5 text-center mb-8 jackpot-active";
+                resultTitle.className = "text-xl font-black text-green-400 mb-2";
+                resultTitle.innerText = `${outcomeText}`;
+                resultDesc.innerText = `축하합니다! 배팅한 ${betPoint}p가 성공적으로 환전되어 총 [ ${reward}p ]를 획득했습니다.`;
+                
+                statusBadge.className = "bg-green-500/10 text-green-400 text-xs font-bold px-3 py-1 rounded-full border border-green-500/30 tracking-wide";
+                statusBadge.innerText = "당첨 완료";
+            } else {
+                resultArea.className = "bg-red-950/40 border border-red-500/30 rounded-2xl p-5 text-center mb-8";
+                resultTitle.className = "text-xl font-black text-red-400 mb-2";
+                resultTitle.innerText = `${outcomeText}`;
+                resultDesc.innerText = `입력한 ${betPoint}p를 잃었습니다. 규칙을 분석하여 다시 도전해 보세요!`;
+                
+                statusBadge.className = "bg-red-500/10 text-red-400 text-xs font-bold px-3 py-1 rounded-full border border-red-500/30 tracking-wide";
+                statusBadge.innerText = "미당첨";
+            }
+
+            // 4. 이전 기록 확인용 저장 시스템 가동
+            saveToHistory(r1, r2, r3, betPoint, reward, outcomeText);
+
+            // 버튼 상태 복구
+            spinButton.disabled = false;
+            spinButton.innerText = "레버 당기기 🚀";
+        }
+
+        /**
+         * 플레이 기록을 보관 및 렌더링하는 함수
+         */
+        function saveToHistory(r1, r2, r3, bet, reward, summary) {
+            const emptyHistory = document.getElementById('emptyHistory');
+            const historyList = document.getElementById('historyList');
+            const historyCount = document.getElementById('historyCount');
+
+            if (emptyHistory) {
+                emptyHistory.remove();
+            }
+
+            const timestamp = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            // 데이터 오브젝트 생성
+            const record = {
+                time: timestamp,
+                combination: `${r1} ${r2} ${r3}`,
+                bet: bet,
+                reward: reward,
+                summary: summary
+            };
+            
+            gameHistory.unshift(record); // 최신 내역이 위로 오도록 추가
+            historyCount.innerText = gameHistory.length;
+
+            // DOM 동적 생성 및 카드형 추가
+            const logItem = document.createElement('div');
+            logItem.className = "bg-gray-950 border border-gray-800 rounded-xl p-3 flex justify-between items-center gap-2 hover:border-gray-700 transition-colors";
+            logItem.innerHTML = `
+                <div>
+                    <span class="text-[10px] text-gray-500 block">${record.time}</span>
+                    <span class="font-bold text-gray-200 tracking-wider">${record.combination}</span>
+                    <span class="text-gray-500 ml-2">(${record.summary})</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-gray-400 block">배팅: ${record.bet}p</span>
+                    <span class="${record.reward > 0 ? 'text-green-400 font-bold' : 'text-gray-600'}">획득: ${record.reward}p</span>
+                </div>
+            `;
+            
+            // 최상단 노드로 배치
+            historyList.insertBefore(logItem, historyList.firstChild);
+        }
+
+        /**
+         * 내역 전체 초기화
+         */
+        function clearHistory() {
+            gameHistory = [];
+            document.getElementById('historyCount').innerText = "0";
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = `<p id="emptyHistory" class="text-center text-gray-600 py-4 italic">아직 저장된 슬롯 기록이 없습니다.</p>`;
+        }
+    </script>
+</body>
+</html>
